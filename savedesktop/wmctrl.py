@@ -20,24 +20,11 @@
 
 import subprocess
 import sys
+from typing import Dict
 from typing import List
 from typing import Set
 
-
-def check_wmctrl_installation():
-    try:
-        subprocess.call(["wmctrl", "--version"])
-        return True
-    except FileNotFoundError as e:
-        return False
-
-
-def check_xwininfo_installation():
-    try:
-        subprocess.call(["xwininfo", "-version"])
-        return True
-    except FileNotFoundError as e:
-        return False
+import savedesktop.profile as p
 
 
 def run_wmctrl(*args: str) -> str:
@@ -56,27 +43,38 @@ def list_window_details(desktop: int = None) -> List[dict]:
         tokens = line.split(maxsplit=7)
         if desktop is not None and desktop != int(tokens[1]):
             continue
-        props = dict()
-        props["id"] = tokens[0]
-        props["desktop"] = int(tokens[1])
-        props["pid"] = int(tokens[2])
-        props["x"] = int(tokens[3])
-        props["y"] = int(tokens[4])
-        props["width"] = int(tokens[5])
-        props["height"] = int(tokens[6])
-        file = open("/proc/{0}/cmdline".format(props["pid"]), "r")
+        profile = dict()
+        profile["id"] = tokens[0]
+        profile["desktop"] = int(tokens[1])
+        profile["pid"] = int(tokens[2])
+        profile["x"] = int(tokens[3])
+        profile["y"] = int(tokens[4])
+        profile["width"] = int(tokens[5])
+        profile["height"] = int(tokens[6])
+        p.set_default_values(profile)
+        file = open("/proc/{0}/cmdline".format(profile["pid"]), "r")
         try:
-            props["cmd"] = file.read().replace('\0', ' ').strip()
+            profile["cmd"] = list(filter(str.strip, file.read().split('\0')))
+            for i in range(len(profile["cmd"])):
+                profile["cmd"][i] = profile["cmd"][i].strip()
         finally:
             file.close()
-        xwininfo(props)
-        if "gnome-terminal-server" in props["cmd"]:
-            props["cmd"] = "gnome-terminal"
-        result.append(props)
+        fix_window_props(profile)
+        xwininfo(profile)
+        result.append(profile)
     return result
 
 
-def list_window_id(desktop: int = None) -> Set[int]:
+def fix_window_props(profile: dict):
+    if "gnome-terminal-server" in profile["cmd"][0]:
+        profile["cmd"] = ["gnome-terminal"]
+    if "soffice.bin" in profile["cmd"][0]:
+        profile["subtract_extents"] = False
+    if profile["cmd"][0].endswith(".exe"):
+        profile["subtract_extents"] = False
+
+
+def list_window_id(desktop: int = None) -> Set[str]:
     window_list = list_window_details(desktop)
     id_set = set()
     for props in window_list:
@@ -84,8 +82,8 @@ def list_window_id(desktop: int = None) -> Set[int]:
     return id_set
 
 
-def xwininfo(props: dict):
-    out = subprocess.check_output(["xwininfo", "-id", props["id"], "-stats", "-wm"], stderr=subprocess.STDOUT)
+def xwininfo(profile: Dict):
+    out = subprocess.check_output(["xwininfo", "-id", profile["id"], "-stats", "-wm"], stderr=subprocess.STDOUT)
     if out is not None:
         out = out.decode(sys.stdout.encoding).strip()
     lines = out.split('\n')
@@ -121,9 +119,14 @@ def xwininfo(props: dict):
             top_decoration = int(extents[2])
             bottom_border = int(extents[3])
             break
-    props["x"] = x - left_border
-    props["y"] = y - top_decoration
-    props["state"] = ",".join(state)
+    if profile["subtract_extents"]:
+        profile["x"] = x - left_border
+        profile["y"] = y - top_decoration
+    else:
+        profile["x"] = x
+        profile["y"] = y
+
+    profile["state"] = ",".join(state)
 
 
 def switch_desktop(desktop: int):
@@ -144,8 +147,15 @@ def resize_move(winid: str, x: int, y: int, width: int, height: int):
     run_wmctrl("-i", "-r", winid, "-e", "0,{0},{1},{2},{3}".format(x, y, width, height))
 
 
-def set_state(winid: str, props: str):
-    run_wmctrl("-i", "-r", winid, "-b", "add," + props)
+def set_state(winid: str, hint: str):
+    if hint == "hidden":
+        subprocess.call(["xdotool", "windowminimize", winid])
+    else:
+        run_wmctrl("-i", "-r", winid, "-b", "add," + hint)
+
+
+def reset_maximized_state(winid: str):
+    run_wmctrl("-i", "-r", winid, "-b", "remove,maximized_vert,maximized_horz")
 
 
 def current_desktop() -> int:
@@ -154,3 +164,12 @@ def current_desktop() -> int:
         if '*' in line:
             return int(line[0])
     return 0
+
+
+def list_desktop() -> List[str]:
+    out = run_wmctrl("-d")
+    result = list()
+    for line in out.split('\n'):
+        items = line.split("  ")
+        result.append("{} - {}".format(items[0], items[-1]))
+    return result

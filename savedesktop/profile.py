@@ -18,42 +18,29 @@
 # You should have received a copy of the GNU General Public License along with this program.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
 import json
-import subprocess
-import sys
 from pathlib import Path
+from typing import Dict
 from typing import List
 
-import savedesktop.wmctrl as wmctrl
+
+def list_profiles() -> List[str]:
+    pdir = Path.home().joinpath(".config/savedesktop")
+    result = list()
+    if pdir.exists():
+        files = pdir.glob("*.json")
+        for file in files:
+            result.append(file.stem)
+    return result
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--open", action="store_true", help="open saved profile")
-    parser.add_argument("-p", "--profile", default="default", help="custom profile name")
-    parser.add_argument("-d", "--desktop", type=int, default=None, help="desktop number from 0 to n")
-    parser.add_argument("--version", action="version", version="0.01")
-    args = parser.parse_args()
-    try:
-        if not wmctrl.check_wmctrl_installation():
-            print("wmctrl is not installed", file=sys.stderr)
-            exit(-1)
-        if not wmctrl.check_xwininfo_installation():
-            print("xwininfo is not installed", file=sys.stderr)
-            exit(-1)
-        if args.desktop is not None:
-            desktop = args.desktop
-        else:
-            desktop = wmctrl.current_desktop()
-        window_list = wmctrl.list_window_details(desktop)
-        json_path = write_profile(window_list, args.profile)
-        if args.open:
-            subprocess.call(["xdg-open", str(json_path)])
-
-    except subprocess.CalledProcessError as e:
-        print("wmctrl did not work properly: {0}".format(str(e)), file=sys.stderr)
-        exit(-1)
+def read_profile(profile: str) -> List[dict]:
+    json_path = Path.home().joinpath(".config/savedesktop/" + profile + ".json")
+    text = json_path.read_text("UTF-8")
+    result = json.loads(text)
+    for profile in result:
+        set_default_values(profile)
+    return result
 
 
 def write_profile(window_list: List[dict], profile: str) -> Path:
@@ -62,6 +49,7 @@ def write_profile(window_list: List[dict], profile: str) -> Path:
         del props["id"]
         del props["desktop"]
         del props["pid"]
+        del props["subtract_extents"]
 
     text = json.dumps(window_list, indent=2)
     conf_dir = Path.home().joinpath(".config/savedesktop")
@@ -71,5 +59,6 @@ def write_profile(window_list: List[dict], profile: str) -> Path:
     return json_path
 
 
-if __name__ == "__main__":
-    main()
+def set_default_values(profile: Dict):
+    profile.setdefault("timeout", 5)
+    profile.setdefault("subtract_extents", True)

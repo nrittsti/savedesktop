@@ -20,14 +20,21 @@
 
 import setuptools
 
+data_files = [
+    ("share/applications", ["data/restoredesktop.desktop", "data/savedesktop.desktop"]),
+    ("share/man/man1", ["data/svd.1"]),
+    ("share/man/man1", ["data/rvd.1"])
+]
+
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='savedesktop',
-    version='0.0.1',
+    version='0.1.0',
+    data_files=data_files,
     entry_points={
-        'console_scripts': ['sd=savedesktop.sd:main', 'rd=savedesktop.rd:main']
+        'console_scripts': ['svd=savedesktop.svd:main', 'rvd=savedesktop.rvd:main']
     },
     author='Nico Rittstieg',
     description='cli script to save and restore virtual desktops',

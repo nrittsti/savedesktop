@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Restore Desktop
+Comment=Restore virtual desktop
+Exec=rvd --gui
+Icon=desktop
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Utility;
+Keywords=desktop;workspace;wmctrl;

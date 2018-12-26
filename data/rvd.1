@@ -1,0 +1,56 @@
+.TH rvd 1 "23 Dezember 2018" "0.1" "rvd man page"
+.\"---------------------------------------------------------------
+.SH NAME
+.\"---------------------------------------------------------------
+rvd \- restore virtual desktop
+.\"---------------------------------------------------------------
+.SH SYNOPSIS
+.\"---------------------------------------------------------------
+.B rvd
+.RI [ " options " ] ...
+.\"---------------------------------------------------------------
+.SH DESCRIPTION
+.\"---------------------------------------------------------------
+.B rvd
+loads stored desktop profiles.
+The profiles must be stored in the directory  ~/.config/savedesktop.
+
+.B OPTIONS
+
+.TP
+\fB\-d\fR, \fB\-\-desktop\fR
+desktop number from 0 to n (default is 0)
+
+.TP
+\fB\-g\fR, \fB\-\-gui\fR
+gui mode, gtk interface based on yad and zenity
+
+.TP
+\fB\-p\fR, \fB\-\-profile\fR
+profile name with default ~/.config/savedesktop/default.json
+
+.\"---------------------------------------------------------------
+.SH EXAMPLES
+.\"---------------------------------------------------------------
+
+Restore second desktop with profile 'demo'
+
+	rvd -d 1 -p demo
+
+Show user interface
+
+	rvd --gui
+
+.\"---------------------------------------------------------------
+.SH AUTHOR
+.\"---------------------------------------------------------------
+SD was written by Nico Rittstieg.
+
+https://github.com/nrittsti/savedesktop
+.\"---------------------------------------------------------------
+.SH SEE ALSO
+.\"---------------------------------------------------------------
+.BR svd (1)
+.BR wmctrl (1)
+.BR xdotool (1)
+.BR xwininfo (1)

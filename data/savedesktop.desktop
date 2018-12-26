@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Save Desktop
+Comment=Save virtual desktop
+Exec=svd --gui
+Icon=desktop
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Utility;
+Keywords=desktop;workspace;wmctrl;

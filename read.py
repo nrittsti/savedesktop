@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License along with this program.
 # If not, see <http://www.gnu.org/licenses/>.
 
-import savedesktop.rd as rd
+import savedesktop.rvd as rvd
 
 if __name__ == '__main__':
-    rd.main()
+    rvd.main()

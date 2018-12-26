@@ -1,0 +1,77 @@
+.TH svd 1 "23 Dezember 2018" "0.1" "svd man page"
+.\"---------------------------------------------------------------
+.SH NAME
+.\"---------------------------------------------------------------
+svd \- save virtual desktop
+.\"---------------------------------------------------------------
+.SH SYNOPSIS
+.\"---------------------------------------------------------------
+.B svd
+.RI [ " options " ] ...
+.\"---------------------------------------------------------------
+.SH DESCRIPTION
+.\"---------------------------------------------------------------
+.B svd
+reads geometry information and properties from all running desktop applications
+and saves the collected data to disk. Profile files are stored in '~/.config/savedesktop'.
+The profiles are saved in json format and can be easily customized.
+
+[
+  {
+    "x": 403,
+    "y": 219,
+    "width": 1094,
+    "height": 599,
+    "cmd": [
+      "nemo"
+    ],
+    "state": ""
+  }
+]
+
+The following state properties are supported:
+maximized_vert, maximized_horz, shaded, hidden, fullscreen.
+
+.B OPTIONS
+
+.TP
+\fB\-d\fR, \fB\-\-desktop\fR
+desktop number from 0 to n (default is 0)
+
+.TP
+\fB\-g\fR, \fB\-\-gui\fR
+gui mode, gtk interface based on yad and zenity
+
+.TP
+\fB\-o\fR, \fB\-\-open\fR
+open saved profile with xdg-open
+
+.TP
+\fB\-p\fR, \fB\-\-profile\fR
+profile name with default ~/.config/savedesktop/default.json
+
+.\"---------------------------------------------------------------
+.SH EXAMPLES
+.\"---------------------------------------------------------------
+
+Save second desktop to profile 'demo'
+
+	svd -d 1 -p demo
+
+Show user interface
+
+	svd --gui
+
+.\"---------------------------------------------------------------
+.SH AUTHOR
+.\"---------------------------------------------------------------
+svd was written by Nico Rittstieg.
+
+https://github.com/nrittsti/savedesktop
+.\"---------------------------------------------------------------
+.SH SEE ALSO
+.\"---------------------------------------------------------------
+.BR rd (1)
+.BR wmctrl (1)
+.BR xdotool (1)
+.BR xwininfo (1)
