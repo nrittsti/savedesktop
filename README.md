@@ -23,19 +23,45 @@ Dependencies:
  - python-setuptools
  - zenity, yad (for gtk dialogs)
 
-Compatible:
+Compatibility:
 --------------------------
 
-Tested with Cinnamon Window Manager (Muffin)
+Tested DEs:
 
+| Desktop Enviroment | Version | Window Manager |
+|--------------------|---------|----------------|
+| Cinnamon           | 4       | Muffin         |
+| LXQT               | 0.13    | OpenBox        |
+| Mate               | 1.20    | Marco          |
+| Plasma             | 5       | Kwin           |
+| XFCE               | 4       | Xfwm           |
+
+
+Tested Applications:
+
+- Caja
 - Chromium
+- Dolphin
+- Falkon
 - Firefox
 - Galculator 
 - Gedit
+- Kate
+- Konsole
+- Leafpad
 - Libre Office
+- Lxterminal
+- Mate-Terminal
+- Midori
+- Mousepad
 - Nemo
+- Pluma
+- Qpdview
+- Thunar (remove --daemon option)
+- VLC
 - Wine Apps
 - Xed
+- Xreader
 
 Incompatible:
 --------------------------
@@ -45,11 +71,9 @@ Incompatible:
 Installation:
 --------------------------
 
-Arch Linux package:
+Arch Linux AUR package:
 
-```
-$ sudo pacman -U savedesktop-*.pkg.tar.xz
-```
+https://aur.archlinux.org/packages/savedesktop/
 
 For manual installation use the following command:
 
