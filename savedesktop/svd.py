@@ -34,7 +34,7 @@ def main():
     parser.add_argument("-o", "--open", action="store_true", help="show saved profile")
     parser.add_argument("-p", "--profile", default="default", help="profile name")
     parser.add_argument("-d", "--desktop", type=int, default=None, help="desktop number from 0 to n")
-    parser.add_argument("--version", action="version", version="0.1.0")
+    parser.add_argument("--version", action="version", version="0.1.1")
     args = parser.parse_args()
     c.check_dependencies(args)
     try:

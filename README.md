@@ -19,9 +19,10 @@ Dependencies:
  - wmctrl (https://sites.google.com/site/tstyblo/wmctrl/)
  - xwininfo (for getting window geometry and extents)
  - xdotool (for hiding windows)
- - Python 3
+ - Python 3.7
  - python-setuptools
- - zenity, yad (for gtk dialogs)
+ - python-gobject
+ - gtk3
 
 Compatibility:
 --------------------------
@@ -131,6 +132,7 @@ Profile files are stored in '~/.config/savedesktop'
     "y": 219,
     "width": 1094,
     "height": 599,
+    "timeout": 5,
     "cmd": [
       "nemo"
     ],
@@ -144,7 +146,7 @@ The following state properties are supported:
 - maximized_horz
 - shaded
 - hidden
-- fullscreen.
+- fullscreen
 
 Project Web site:
 --------------------

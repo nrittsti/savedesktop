@@ -18,18 +18,25 @@
 # You should have received a copy of the GNU General Public License along with this program.
 # If not, see <http://www.gnu.org/licenses/>.
 
+import gi
+
+gi.require_version('Gtk', '3.0')
 import argparse
-import subprocess
-import time
 from typing import List
+from gi.repository import Gtk
 
 
 def show_error(msg: str):
-    subprocess.check_output(["zenity",
-                             "--error",
-                             "--title=Save Virtual Desktop",
-                             "--width=600",
-                             "--text={}".format(msg)])
+    dialog = Gtk.MessageDialog(None,
+                               0,
+                               Gtk.MessageType.ERROR,
+                               Gtk.ButtonsType.CLOSE,
+                               "An error has occurred")
+    dialog.format_secondary_text(msg)
+    dialog.set_title("Save/Restore Virtual Desktop")
+    dialog.set_default_size(500, 160)
+    dialog.run()
+    dialog.destroy()
 
 
 def show_save_desktop(args: argparse.Namespace, desktop_list: List[str], profile_list: List[str]):
@@ -37,63 +44,129 @@ def show_save_desktop(args: argparse.Namespace, desktop_list: List[str], profile
         profile_list.append("default")
     if args.profile not in profile_list:
         profile_list.insert(0, args.profile)
-    else:
-        for i in range(len(profile_list)):
-            if profile_list[i] == args.profile:
-                profile_list[i] = "^{}".format(args.profile)
-                break
-    if args.desktop is not None:
-        desktop_list[args.desktop] = "^{}".format(desktop_list[args.desktop])
-    try:
-        output = subprocess.check_output(["yad",
-                                          "--width=300",
-                                          "--form",
-                                          "--title=Save Virtual Desktop",
-                                          "--field=Desktop:CB",
-                                          "!".join(desktop_list),
-                                          "--field=Profile:CBE",
-                                          "!".join(profile_list),
-                                          "--field=Open JSON file:CHK",
-                                          "TRUE" if args.open else "FALSE",
-                                          ],
-                                         stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
-        # Return Code 1 -> The user has pressed Cancel button
+
+    dialog = SaveDialog(args.desktop, desktop_list, args.profile, profile_list)
+    response = dialog.run()
+
+    if response != Gtk.ResponseType.OK:
+        dialog.destroy()
         exit(0)
-    # parse yad output : b'0 - Workspace 1|default|TRUE|\n'
-    values = str(output)[2:-4].split("|")
-    args.desktop = int(values[0][0])
-    args.profile = values[1].strip()
+
+    args.desktop = dialog.desktop_combo.get_active()
+    args.profile = dialog.profile_combo.get_active_text().strip()
     if len(args.profile) == 0:
         args.profile = "default"
-    args.open = "TRUE" == values[2]
-    # avoid wmctrl timing probs
-    time.sleep(.100)
+    args.open = dialog.open_checkbox.get_active()
+
+    dialog.destroy()
 
 
 def show_restore_desktop(args: argparse.Namespace, desktop_list: List[str], profile_list: List[str]):
-    for i in range(len(profile_list)):
-        if profile_list[i] == args.profile:
-            profile_list[i] = "^{}".format(args.profile)
-            break
-    desktop_list[args.desktop] = "^{}".format(desktop_list[args.desktop])
-    try:
-        output = subprocess.check_output(["yad",
-                                          "--width=300",
-                                          "--form",
-                                          "--title=Restore Virtual Desktop",
-                                          "--field=Desktop:CB",
-                                          "!".join(desktop_list),
-                                          "--field=Profile:CB",
-                                          "!".join(profile_list),
-                                          ],
-                                         stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
-        # Return Code 1 -> The user has pressed Cancel button
+    dialog = RestoreDialog(args.desktop, desktop_list, args.profile, profile_list)
+    response = dialog.run()
+
+    if response != Gtk.ResponseType.OK:
+        dialog.destroy()
         exit(0)
-    # parse yad output : b'0 - Workspace 1|default|\n'
-    values = str(output)[2:-4].split("|")
-    args.desktop = int(values[0][0])
-    args.profile = values[1].strip()
-    # avoid wmctrl timing probs
-    time.sleep(.100)
+
+    args.desktop = dialog.desktop_combo.get_active()
+    args.profile = dialog.profile_combo.get_active_text()
+
+    dialog.destroy()
+
+
+class SaveDialog(Gtk.Dialog):
+
+    def __init__(self, current_desktop: int, desktop_list: List[str], current_profile, profile_list: List[str]):
+        Gtk.Dialog.__init__(self,
+                            "Save Virtual Desktop",
+                            None, 0,
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        self.set_border_width(5)
+
+        self.set_icon(self.render_icon(Gtk.STOCK_DIALOG_QUESTION, Gtk.IconSize.DIALOG))
+
+        vbox = self.get_content_area()
+        vbox.set_spacing(5)
+
+        hbox = Gtk.HBox(spacing=20)
+        vbox.pack_start(hbox, True, True, 0)
+        label = Gtk.Label("Desktop:")
+        label.set_size_request(70, 20)
+        label.set_xalign(0)
+        hbox.pack_start(label, False, False, 0)
+        self.desktop_combo = Gtk.ComboBoxText()
+        for desktop in desktop_list:
+            self.desktop_combo.append_text(desktop)
+        self.desktop_combo.set_active(current_desktop)
+        hbox.pack_start(self.desktop_combo, True, True, 0)
+
+        hbox = Gtk.HBox(spacing=20)
+        vbox.pack_start(hbox, True, True, 0)
+        label = Gtk.Label("Profile:")
+        label.set_size_request(70, 20)
+        label.set_xalign(0)
+        hbox.pack_start(label, False, False, 0)
+        self.profile_combo = Gtk.ComboBoxText()
+        for profile in profile_list:
+            self.profile_combo.append_text(profile)
+        self.profile_combo.set_active(profile_list.index(current_profile))
+        hbox.pack_start(self.profile_combo, True, True, 0)
+
+        hbox = Gtk.HBox(spacing=10)
+        vbox.pack_start(hbox, True, True, 10)
+        label = Gtk.Label()
+        label.set_size_request(70, 20)
+        hbox.pack_start(label, False, False, 0)
+        self.open_checkbox = Gtk.CheckButton("Open JSON file")
+        hbox.pack_start(self.open_checkbox, False, False, 0)
+
+        vbox.pack_start(Gtk.HSeparator(), True, True, 0)
+
+        self.show_all()
+
+
+class RestoreDialog(Gtk.Dialog):
+
+    def __init__(self, current_desktop: int, desktop_list: List[str], current_profile, profile_list: List[str]):
+        Gtk.Dialog.__init__(self,
+                            "Restore Virtual Desktop",
+                            None, 0,
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        self.set_border_width(5)
+        self.set_icon(self.render_icon(Gtk.STOCK_DIALOG_QUESTION, Gtk.IconSize.DIALOG))
+
+        vbox = self.get_content_area()
+        vbox.set_spacing(5)
+
+        hbox = Gtk.HBox(spacing=20)
+        vbox.pack_start(hbox, True, True, 0)
+        label = Gtk.Label("Desktop:")
+        label.set_size_request(70, 20)
+        label.set_xalign(0)
+        hbox.pack_start(label, False, False, 0)
+        self.desktop_combo = Gtk.ComboBoxText()
+        for desktop in desktop_list:
+            self.desktop_combo.append_text(desktop)
+        self.desktop_combo.set_active(current_desktop)
+        hbox.pack_start(self.desktop_combo, True, True, 0)
+
+        hbox = Gtk.HBox(spacing=20)
+        vbox.pack_start(hbox, True, True, 10)
+        label = Gtk.Label("Profile:")
+        label.set_size_request(70, 20)
+        label.set_xalign(0)
+        hbox.pack_start(label, False, False, 0)
+        self.profile_combo = Gtk.ComboBoxText.new_with_entry()
+        for profile in profile_list:
+            self.profile_combo.append_text(profile)
+        self.profile_combo.set_active(profile_list.index(current_profile))
+        hbox.pack_start(self.profile_combo, True, True, 0)
+
+        vbox.pack_start(Gtk.HSeparator(), True, True, 0)
+
+        self.show_all()

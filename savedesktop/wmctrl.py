@@ -40,6 +40,8 @@ def list_window_details(desktop: int = None) -> List[dict]:
     result = list()
     out = run_wmctrl("-p", "-G", "-l")
     for line in out.split('\n'):
+        if line.endswith("Save Virtual Desktop"):
+            continue
         tokens = line.split(maxsplit=7)
         if desktop is not None and desktop != int(tokens[1]):
             continue

@@ -35,8 +35,8 @@ def main():
     parser = argparse.ArgumentParser(description='Restore virtual desktops (workspaces)')
     parser.add_argument("-g", "--gui", action="store_true", help="gui mode")
     parser.add_argument("-p", "--profile", default="default", help="profile name")
-    parser.add_argument("-d", "--desktop", type=int, default=0, help="target desktop number from 0 to n")
-    parser.add_argument("--version", action="version", version="0.1.0")
+    parser.add_argument("-d", "--desktop", type=int, default=None, help="target desktop number from 0 to n")
+    parser.add_argument("--version", action="version", version="0.1.1")
     args = parser.parse_args()
     c.check_dependencies(args)
     try:
@@ -57,7 +57,10 @@ def restore(args: argparse.Namespace):
     try:
         window_list = p.read_profile(args.profile)
     except FileNotFoundError as e:
-        print("profile '{0}' not found".format(e.filename), file=sys.stderr)
+        msg = "profile '{0}' not found".format(e.filename)
+        print(msg, file=sys.stderr)
+        if args.gui:
+            gui.show_error(msg)
         exit(-1)
     wmctrl.switch_desktop(args.desktop)
     for props in window_list:

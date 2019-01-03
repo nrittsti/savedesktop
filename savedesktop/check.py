@@ -42,16 +42,6 @@ def check_dependencies(args: argparse.Namespace):
         if args.gui:
             gui.show_error("xdotool is not installed")
         exit(-1)
-    if args.gui and not check_yad_installation():
-        print("yad is not installed", file=sys.stderr)
-        if args.gui:
-            gui.show_error("yad is not installed")
-        exit(-1)
-    if args.gui and not check_zenity_installation():
-        print("zenity is not installed", file=sys.stderr)
-        if args.gui:
-            gui.show_error("zenity is not installed")
-        exit(-1)
 
 
 def check_wmctrl_installation():
@@ -73,22 +63,6 @@ def check_xwininfo_installation():
 def check_xdotool_installation():
     try:
         subprocess.call(["xdotool", "--version"], stdout=subprocess.DEVNULL)
-        return True
-    except FileNotFoundError as e:
-        return False
-
-
-def check_zenity_installation():
-    try:
-        subprocess.call(["zenity", "--version"], stdout=subprocess.DEVNULL)
-        return True
-    except FileNotFoundError as e:
-        return False
-
-
-def check_yad_installation():
-    try:
-        subprocess.call(["yad", "--version"], stdout=subprocess.DEVNULL)
         return True
     except FileNotFoundError as e:
         return False

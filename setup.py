@@ -31,7 +31,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='savedesktop',
-    version='0.1.0',
+    version='0.1.1',
     data_files=data_files,
     entry_points={
         'console_scripts': ['svd=savedesktop.svd:main', 'rvd=savedesktop.rvd:main']
@@ -40,10 +40,10 @@ setuptools.setup(
     description='cli script to save and restore virtual desktops',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://gitlab.com/nrittsti/sd',
+    url='https://github.com/nrittsti/savedesktop',
     packages=setuptools.find_packages(),
     license="GPL",
-    keywords=['window manager', 'wmctrl', 'desktop'],
+    keywords=['window manager', 'wmctrl', 'desktop', 'automation'],
     classifiers=(
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GPL License',
