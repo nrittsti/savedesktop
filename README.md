@@ -2,8 +2,14 @@
 
 A CLI tool for saving and restoring virtual linux desktops.
 
-Stage of development: alpha version
+Stage of development: discotinued
 
+> SaveDesktop needs the deprecated xorg display server.  
+> Xorg is almost unmaintened and will be phased out by most of the mayor Linux destributions.  
+> The default desktop session is now the Wayland session.  
+> Alternatives:
+> - [Sway](https://github.com/Nama/swayrst)
+> - [KDE Plasma Window Rules](https://userbase.kde.org/KWin_Rules_Window_Attributes) 
 
 Main features: 
 -------------------
